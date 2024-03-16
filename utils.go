@@ -3,6 +3,7 @@ package logger
 import (
 	"context"
 	"golang.org/x/mod/modfile"
+	"google.golang.org/grpc/metadata"
 	"log"
 	pb "logger/grpc"
 	"os"
@@ -28,7 +29,9 @@ func sendLogs() {
 	}
 }
 func forwardSendLogs() {
-	_, err := lg.client.SendLogs(context.Background(), &lg.logs)
+	md := metadata.Pairs("serviceName", lg.serviceName)
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+	_, err := lg.client.SendLogs(ctx, &lg.logs)
 	if err != nil {
 		log.Printf("Error send logs: %v", err)
 	}

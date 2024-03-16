@@ -100,14 +100,14 @@ func (l *CLg) Errorf(msg string, args ...any) {
 }
 func (l *CLg) Error(err error) {
 	if err != nil {
-		zl.Error().CallerSkipFrame(l.skip).Msg(err.Error())
+		zl.Err(err).CallerSkipFrame(l.skip).Send()
 		l.send(zerolog.ErrorLevel, err.Error())
 	}
 }
 func (l *CLg) ErrorD(err *error) {
 	if err != nil {
 		if *err != nil {
-			zl.Error().CallerSkipFrame(l.skip).Msg((*err).Error())
+			zl.Err(*err).CallerSkipFrame(l.skip).Send()
 			l.send(zerolog.ErrorLevel, (*err).Error())
 		}
 	}

@@ -33,7 +33,8 @@ type IPLg interface {
 	Warn(msg string)
 	//error
 	Errorf(msg string, args ...any)
-	Error(msg string)
+	Error(err error)
+	ErrorD(err *error)
 	//panic
 	Panicf(msg string, args ...any)
 	Panic(msg string)

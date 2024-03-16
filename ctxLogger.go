@@ -98,9 +98,19 @@ func (l *CLg) Errorf(msg string, args ...any) {
 	zl.Error().CallerSkipFrame(l.skip).Msgf(msg, args...)
 	l.send(zerolog.ErrorLevel, msg, args...)
 }
-func (l *CLg) Error(msg string) {
-	zl.Error().CallerSkipFrame(l.skip).Msg(msg)
-	l.send(zerolog.ErrorLevel, msg)
+func (l *CLg) Error(err error) {
+	if err != nil {
+		zl.Error().CallerSkipFrame(l.skip).Msg(err.Error())
+		l.send(zerolog.ErrorLevel, err.Error())
+	}
+}
+func (l *CLg) ErrorD(err *error) {
+	if err != nil {
+		if *err != nil {
+			zl.Error().CallerSkipFrame(l.skip).Msg((*err).Error())
+			l.send(zerolog.ErrorLevel, (*err).Error())
+		}
+	}
 }
 
 // panic

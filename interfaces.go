@@ -13,6 +13,7 @@ type ICLg interface {
 	SpanStatus(code codes.Code, msg string, args ...any)
 	SpanTag(key, value string)
 	SpanLog(msg string, args ...any)
+	SpanSend()
 	IPLg
 	context.Context
 }

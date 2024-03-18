@@ -170,3 +170,7 @@ func (l *CLg) send(level zerolog.Level, msg string, args ...any) {
 	lg.logs.Logs = append(lg.logs.Logs, log)
 	lg.mu.Unlock()
 }
+
+func (l *CLg) SpanSend() {
+	(*l.span).End()
+}

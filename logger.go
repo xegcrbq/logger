@@ -34,6 +34,9 @@ func Connect(addr string) {
 }
 
 func Ctx(ctx context.Context) ICLg {
+	if ctxLogger := loggerFromContext(ctx); ctxLogger != nil {
+		return ctxLogger
+	}
 	span := trace.SpanFromContext(ctx)
 	if !span.SpanContext().IsValid() {
 		ctx, span = otel.Tracer("lower").Start(ctx, "lower")

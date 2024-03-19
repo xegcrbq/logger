@@ -1,4 +1,4 @@
-module logger
+module github.com/fle4a/logger
 
 go 1.21.8
 

@@ -2,10 +2,10 @@ package logger
 
 import (
 	"context"
+	pb "github.com/fle4a/logger/grpc"
 	"golang.org/x/mod/modfile"
 	"google.golang.org/grpc/metadata"
 	"log"
-	pb "logger/grpc"
 	"os"
 	"time"
 )

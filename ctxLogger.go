@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	pb "github.com/fle4a/logger/grpc"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
-	pb "logger/grpc"
 	"runtime"
 	"time"
 )

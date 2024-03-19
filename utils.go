@@ -19,12 +19,14 @@ func sendLogs() {
 	for {
 		select {
 		case <-time.After(time.Second * time.Duration(SENDPERIOD)):
-			_, err := lg.client.SendLogs(context.Background(), &lg.logs)
-			if err != nil {
-				log.Printf("Error send logs: %v", err)
-				continue
+			if len(lg.logs.Logs) > 0 {
+				_, err := lg.client.SendLogs(context.Background(), &lg.logs)
+				if err != nil {
+					log.Printf("Error send logs: %v", err)
+					continue
+				}
+				lg.logs = pb.LogBatch{}
 			}
-			lg.logs = pb.LogBatch{}
 		}
 	}
 }

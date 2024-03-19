@@ -53,6 +53,16 @@ func (l *CLg) SpanLog(msg string, args ...any) {
 	(*l.span).RecordError(errors.New(fmt.Sprintf(msg, args...)))
 }
 
+func (l *CLg) SpanSetKV(key string, value map[string]string) {
+	list := make([]trace.EventOption, len(value))
+	var i int
+	for k, v := range value {
+		list[i] = trace.WithAttributes(attribute.Key(k).String(v))
+		i++
+	}
+	(*l.span).AddEvent(key, list...)
+}
+
 func (l *CLg) Tracef(msg string, args ...any) {
 	zl.Trace().CallerSkipFrame(l.skip).Msgf(msg, args...)
 	l.send(zerolog.TraceLevel, msg, args...)
@@ -100,14 +110,14 @@ func (l *CLg) Errorf(msg string, args ...any) {
 func (l *CLg) Error(err error) {
 	if err != nil {
 		zl.Err(err).CallerSkipFrame(l.skip).Send()
-		l.send(zerolog.ErrorLevel, err.Error())
+		l.send(zerolog.ErrorLevel, "%+v", err)
 	}
 }
 func (l *CLg) ErrorD(err *error) {
 	if err != nil {
 		if *err != nil {
 			zl.Err(*err).CallerSkipFrame(l.skip).Send()
-			l.send(zerolog.ErrorLevel, (*err).Error())
+			l.send(zerolog.ErrorLevel, "%+v", *err)
 		}
 	}
 }
@@ -162,8 +172,11 @@ func (l *CLg) send(level zerolog.Level, msg string, args ...any) {
 		TraceId: l.traceID,
 		Msg:     fmt.Sprintf(msg, args...),
 		Tag:     l.tag,
-		Caller:  l.caller(),
 		Level:   level.String(),
+	}
+	if level >= zerolog.ErrorLevel {
+		l.SpanLog(msg, args...)
+		log.Caller = l.caller()
 	}
 	lg.mu.Lock()
 	lg.logs.Logs = append(lg.logs.Logs, log)

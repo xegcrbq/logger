@@ -36,10 +36,3 @@ func forwardSendLogs() {
 		log.Printf("Error send logs: %v", err)
 	}
 }
-
-func loggerFromContext(ctx context.Context) ICLg {
-	if val, ok := ctx.Value("logger").(*CLg); ok {
-		return val
-	}
-	return nil
-}

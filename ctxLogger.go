@@ -2,6 +2,7 @@ package logger
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/golang/protobuf/ptypes/timestamp"
@@ -53,14 +54,13 @@ func (l *CLg) SpanLog(msg string, args ...any) {
 	(*l.span).RecordError(errors.New(fmt.Sprintf(msg, args...)))
 }
 
-func (l *CLg) SpanSetKV(key string, value map[string]string) {
-	list := make([]trace.EventOption, len(value))
-	var i int
-	for k, v := range value {
-		list[i] = trace.WithAttributes(attribute.Key(k).String(v))
-		i++
+func (l *CLg) SpanSetKV(key string, value any) {
+	bytes, err := json.Marshal(value)
+	if err != nil {
+		l.Error(err)
+		return
 	}
-	(*l.span).AddEvent(key, list...)
+	(*l.span).AddEvent("", trace.WithAttributes(attribute.Key(key).String(string(bytes))))
 }
 
 func (l *CLg) Tracef(msg string, args ...any) {

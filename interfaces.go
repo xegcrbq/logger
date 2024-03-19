@@ -11,7 +11,7 @@ type ICLg interface {
 	Skip(fc int) ICLg
 	TgTag(tag string) ICLg
 	SpanStatus(code codes.Code, msg string, args ...any)
-	SpanSetKV(key string, value map[string]string)
+	SpanSetKV(key string, value any)
 	SpanTag(key, value string)
 	SpanLog(msg string, args ...any)
 	End()

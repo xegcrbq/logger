@@ -19,7 +19,6 @@ type CLg struct {
 	span    *trace.Span
 	skip    int
 	traceID string
-
 	context.Context
 }
 
@@ -171,6 +170,6 @@ func (l *CLg) send(level zerolog.Level, msg string, args ...any) {
 	lg.mu.Unlock()
 }
 
-func (l *CLg) SpanSend() {
+func (l *CLg) End() {
 	(*l.span).End()
 }

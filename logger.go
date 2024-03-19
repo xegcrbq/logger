@@ -20,6 +20,11 @@ type logger struct {
 	mu          sync.Mutex
 }
 
+type CtxOptions struct {
+	Tracer   trace.Tracer
+	SpanName string
+}
+
 var lg *logger
 var zl zerolog.Logger
 
@@ -34,9 +39,6 @@ func Connect(addr string) {
 }
 
 func Ctx(ctx context.Context) ICLg {
-	if ctxLogger := loggerFromContext(ctx); ctxLogger != nil {
-		return ctxLogger
-	}
 	span := trace.SpanFromContext(ctx)
 	if !span.SpanContext().IsValid() {
 		ctx, span = otel.Tracer("lower").Start(ctx, "lower")
@@ -45,7 +47,26 @@ func Ctx(ctx context.Context) ICLg {
 		span:    &span,
 		traceID: span.SpanContext().TraceID().String(),
 		skip:    1,
+		Context: ctx,
 	}
+}
+
+func CtxWithSpan(ctx context.Context, opts CtxOptions) ICLg {
+	if opts.Tracer == nil {
+		opts.Tracer = otel.Tracer("logger")
+	}
+	span := trace.SpanFromContext(ctx)
+	if !span.SpanContext().IsValid() {
+		ctx, span = opts.Tracer.Start(ctx, "lower")
+	}
+	ctx, span = opts.Tracer.Start(ctx, opts.SpanName)
+	return &CLg{
+		span:    &span,
+		traceID: span.SpanContext().TraceID().String(),
+		skip:    1,
+		Context: ctx,
+	}
+
 }
 
 func Serve(addr string, server pb.LogServiceServer) {

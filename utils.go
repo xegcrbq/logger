@@ -5,7 +5,6 @@ import (
 	pb "github.com/fle4a/logger/grpc"
 	"golang.org/x/mod/modfile"
 	"google.golang.org/grpc/metadata"
-	"log"
 	"os"
 	"time"
 )
@@ -24,7 +23,7 @@ func sendLogs() {
 				ctx := metadata.NewOutgoingContext(context.Background(), md)
 				_, err := lg.client.SendLogs(ctx, &lg.logs)
 				if err != nil {
-					log.Printf("Error send logs: %v", err)
+					lg.lgCtx.Errorf("Error send logs: %v", err)
 					continue
 				}
 				lg.logs = pb.LogBatch{}
@@ -37,6 +36,6 @@ func forwardSendLogs() {
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	_, err := lg.client.SendLogs(ctx, &lg.logs)
 	if err != nil {
-		log.Printf("Error send logs: %v", err)
+		lg.lgCtx.Errorf("Error send logs: %v", err)
 	}
 }

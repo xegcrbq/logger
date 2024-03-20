@@ -7,7 +7,6 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
-	"log"
 	"net"
 	"os"
 	"sync"
@@ -19,6 +18,7 @@ type logger struct {
 	logs        pb.LogBatch
 	serviceName string
 	mu          sync.Mutex
+	lgCtx       ICLg
 }
 
 type CtxOptions struct {
@@ -32,7 +32,7 @@ var zl zerolog.Logger
 func Connect(addr string) {
 	moscowLocation, err := time.LoadLocation("Europe/Moscow")
 	if err != nil {
-		log.Println("Failed to load Moscow timezone")
+		lg.lgCtx.Info("Failed to load Moscow timezone")
 	}
 	var consoleWriterPtr *zerolog.ConsoleWriter
 	zerolog.TimeFieldFormat = time.StampMilli
@@ -57,6 +57,7 @@ func Connect(addr string) {
 		client:      NewClient(addr),
 		logs:        pb.LogBatch{},
 		serviceName: getServiceName(),
+		lgCtx:       Ctx(context.Background()),
 	}
 	go sendLogs()
 }
@@ -64,7 +65,7 @@ func Connect(addr string) {
 func Ctx(ctx context.Context) ICLg {
 	span := trace.SpanFromContext(ctx)
 	if !span.SpanContext().IsValid() {
-		ctx, span = otel.Tracer("lower").Start(ctx, "lower")
+		ctx, span = otel.Tracer("logger").Start(ctx, "logger")
 	}
 	return &CLg{
 		span:    &span,
@@ -80,7 +81,7 @@ func CtxWithSpan(ctx context.Context, opts CtxOptions) ICLg {
 	}
 	span := trace.SpanFromContext(ctx)
 	if !span.SpanContext().IsValid() {
-		ctx, span = opts.Tracer.Start(ctx, "lower")
+		ctx, span = opts.Tracer.Start(ctx, "logger")
 	}
 	ctx, span = opts.Tracer.Start(ctx, opts.SpanName)
 	return &CLg{
@@ -95,13 +96,13 @@ func CtxWithSpan(ctx context.Context, opts CtxOptions) ICLg {
 func Serve(addr string, server pb.LogServiceServer) {
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
-		log.Fatalf("Error listen on addr = %s: %v", addr, err)
+		lg.lgCtx.Fatalf("Error listen on addr = %s: %v", addr, err)
 	}
 	gRPCServer := grpc.NewServer()
 	pb.RegisterLogServiceServer(gRPCServer, server)
 	go func() {
 		if err = gRPCServer.Serve(lis); err != nil {
-			log.Fatalf("Failed to serve gRPC on addr = %s: %v", addr, err)
+			lg.lgCtx.Fatalf("Failed to serve gRPC on addr = %s: %v", addr, err)
 		}
 	}()
 }

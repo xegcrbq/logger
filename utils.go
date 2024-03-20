@@ -20,7 +20,9 @@ func sendLogs() {
 		select {
 		case <-time.After(time.Second * time.Duration(SENDPERIOD)):
 			if len(lg.logs.Logs) > 0 {
-				_, err := lg.client.SendLogs(context.Background(), &lg.logs)
+				md := metadata.Pairs("serviceName", getServiceName())
+				ctx := metadata.NewOutgoingContext(context.Background(), md)
+				_, err := lg.client.SendLogs(ctx, &lg.logs)
 				if err != nil {
 					log.Printf("Error send logs: %v", err)
 					continue

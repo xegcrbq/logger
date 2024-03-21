@@ -6,8 +6,6 @@ import (
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
-	"google.golang.org/grpc"
-	"net"
 	"os"
 	"sync"
 	"time"
@@ -91,18 +89,4 @@ func CtxWithSpan(ctx context.Context, opts CtxOptions) ICLg {
 		Context: ctx,
 	}
 
-}
-
-func Serve(addr string, server pb.LogServiceServer) {
-	lis, err := net.Listen("tcp", addr)
-	if err != nil {
-		lg.lgCtx.Fatalf("Error listen on addr = %s: %v", addr, err)
-	}
-	gRPCServer := grpc.NewServer()
-	pb.RegisterLogServiceServer(gRPCServer, server)
-	go func() {
-		if err = gRPCServer.Serve(lis); err != nil {
-			lg.lgCtx.Fatalf("Failed to serve gRPC on addr = %s: %v", addr, err)
-		}
-	}()
 }

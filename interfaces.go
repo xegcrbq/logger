@@ -15,6 +15,7 @@ type ICLg interface {
 	SpanTag(key, value string)
 	SpanLog(msg string, args ...any)
 	End()
+	LoggerContext() context.Context
 	IPLg
 	context.Context
 }

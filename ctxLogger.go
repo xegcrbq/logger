@@ -186,3 +186,7 @@ func (l *CtxLogger) send(level zerolog.Level, msg string, args ...any) {
 func (l *CtxLogger) End() {
 	(*l.span).End()
 }
+
+func (l *CtxLogger) LoggerContext() context.Context {
+	return l.Context
+}

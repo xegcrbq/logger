@@ -65,7 +65,7 @@ func Ctx(ctx context.Context) ICLg {
 	if !span.SpanContext().IsValid() {
 		ctx, span = otel.Tracer("logger").Start(ctx, "logger")
 	}
-	return &CLg{
+	return &CtxLogger{
 		span:    &span,
 		traceID: span.SpanContext().TraceID().String(),
 		skip:    1,
@@ -82,7 +82,7 @@ func CtxWithSpan(ctx context.Context, opts CtxOptions) ICLg {
 		ctx, span = opts.Tracer.Start(ctx, "logger")
 	}
 	ctx, span = opts.Tracer.Start(ctx, opts.SpanName)
-	return &CLg{
+	return &CtxLogger{
 		span:    &span,
 		traceID: span.SpanContext().TraceID().String(),
 		skip:    1,

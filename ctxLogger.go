@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-type CLg struct {
+type CtxLogger struct {
 	tag     string
 	span    *trace.Span
 	skip    int
@@ -23,8 +23,8 @@ type CLg struct {
 	context.Context
 }
 
-func (l *CLg) new(tag *string, fc *int) ICLg {
-	ctxLogger := CLg{
+func (l *CtxLogger) new(tag *string, fc *int) ICLg {
+	ctxLogger := CtxLogger{
 		span:    l.span,
 		traceID: l.traceID,
 		Context: l.Context,
@@ -38,23 +38,23 @@ func (l *CLg) new(tag *string, fc *int) ICLg {
 	return &ctxLogger
 }
 
-func (l *CLg) Skip(fc int) ICLg {
+func (l *CtxLogger) Skip(fc int) ICLg {
 	return l.new(&l.tag, &fc)
 }
-func (l *CLg) TgTag(tag string) ICLg {
+func (l *CtxLogger) TgTag(tag string) ICLg {
 	return l.new(&tag, &l.skip)
 }
-func (l *CLg) SpanStatus(code codes.Code, msg string, args ...any) {
+func (l *CtxLogger) SpanStatus(code codes.Code, msg string, args ...any) {
 	(*l.span).SetStatus(code, fmt.Sprintf(msg, args...))
 }
-func (l *CLg) SpanTag(key, value string) {
+func (l *CtxLogger) SpanTag(key, value string) {
 	(*l.span).SetAttributes(attribute.String(key, value))
 }
-func (l *CLg) SpanLog(msg string, args ...any) {
+func (l *CtxLogger) SpanLog(msg string, args ...any) {
 	(*l.span).RecordError(errors.New(fmt.Sprintf(msg, args...)))
 }
 
-func (l *CLg) SpanSetKV(key string, value any) {
+func (l *CtxLogger) SpanSetKV(key string, value any) {
 	bytes, err := json.Marshal(value)
 	if err != nil {
 		l.Error(err)
@@ -63,57 +63,57 @@ func (l *CLg) SpanSetKV(key string, value any) {
 	(*l.span).AddEvent("", trace.WithAttributes(attribute.Key(key).String(string(bytes))))
 }
 
-func (l *CLg) Tracef(msg string, args ...any) {
+func (l *CtxLogger) Tracef(msg string, args ...any) {
 	zl.Trace().CallerSkipFrame(l.skip).Msgf(msg, args...)
 	l.send(zerolog.TraceLevel, msg, args...)
 }
-func (l *CLg) Trace(msg string) {
+func (l *CtxLogger) Trace(msg string) {
 	zl.Trace().CallerSkipFrame(l.skip).Msg(msg)
 	l.send(zerolog.TraceLevel, msg)
 }
 
 // debug
-func (l *CLg) Debugf(msg string, args ...any) {
+func (l *CtxLogger) Debugf(msg string, args ...any) {
 	zl.Debug().CallerSkipFrame(l.skip).Msgf(msg, args...)
 	l.send(zerolog.DebugLevel, msg, args...)
 }
-func (l *CLg) Debug(msg string) {
+func (l *CtxLogger) Debug(msg string) {
 	zl.Debug().CallerSkipFrame(l.skip).Msg(msg)
 	l.send(zerolog.DebugLevel, msg)
 }
 
 // info
-func (l *CLg) Infof(msg string, args ...any) {
+func (l *CtxLogger) Infof(msg string, args ...any) {
 	zl.Info().CallerSkipFrame(l.skip).Msgf(msg, args...)
 	l.send(zerolog.InfoLevel, msg, args...)
 }
-func (l *CLg) Info(msg string) {
+func (l *CtxLogger) Info(msg string) {
 	zl.Info().CallerSkipFrame(l.skip).Msg(msg)
 	l.send(zerolog.InfoLevel, msg)
 }
 
 // warn
-func (l *CLg) Warnf(msg string, args ...any) {
+func (l *CtxLogger) Warnf(msg string, args ...any) {
 	zl.Warn().CallerSkipFrame(l.skip).Msgf(msg, args...)
 	l.send(zerolog.WarnLevel, msg, args...)
 }
-func (l *CLg) Warn(msg string) {
+func (l *CtxLogger) Warn(msg string) {
 	zl.Warn().CallerSkipFrame(l.skip).Msg(msg)
 	l.send(zerolog.WarnLevel, msg)
 }
 
 // error
-func (l *CLg) Errorf(msg string, args ...any) {
+func (l *CtxLogger) Errorf(msg string, args ...any) {
 	zl.Error().CallerSkipFrame(l.skip).Msgf(msg, args...)
 	l.send(zerolog.ErrorLevel, msg, args...)
 }
-func (l *CLg) Error(err error) {
+func (l *CtxLogger) Error(err error) {
 	if err != nil {
 		zl.Err(err).CallerSkipFrame(l.skip).Send()
 		l.send(zerolog.ErrorLevel, "%+v", err)
 	}
 }
-func (l *CLg) ErrorD(err *error) {
+func (l *CtxLogger) ErrorD(err *error) {
 	if err != nil {
 		if *err != nil {
 			zl.Err(*err).CallerSkipFrame(l.skip).Send()
@@ -123,13 +123,13 @@ func (l *CLg) ErrorD(err *error) {
 }
 
 // panic
-func (l *CLg) Panicf(msg string, args ...any) {
+func (l *CtxLogger) Panicf(msg string, args ...any) {
 	l.send(zerolog.PanicLevel, msg, args...)
 	forwardSendLogs()
 	zl.Panic().CallerSkipFrame(l.skip).Msgf(msg, args...)
 
 }
-func (l *CLg) Panic(msg string) {
+func (l *CtxLogger) Panic(msg string) {
 	l.send(zerolog.PanicLevel, msg)
 	forwardSendLogs()
 	zl.Panic().CallerSkipFrame(l.skip).Msg(msg)
@@ -137,18 +137,18 @@ func (l *CLg) Panic(msg string) {
 }
 
 // fatal
-func (l *CLg) Fatalf(msg string, args ...any) {
+func (l *CtxLogger) Fatalf(msg string, args ...any) {
 	l.send(zerolog.FatalLevel, msg, args...)
 	forwardSendLogs()
 	zl.Fatal().CallerSkipFrame(l.skip).Msgf(msg, args...)
 }
-func (l *CLg) Fatal(msg string) {
+func (l *CtxLogger) Fatal(msg string) {
 	l.send(zerolog.TraceLevel, msg)
 	forwardSendLogs()
 	zl.Fatal().CallerSkipFrame(l.skip).Msg(msg)
 }
 
-func (l *CLg) caller() []*pb.Caller {
+func (l *CtxLogger) caller() []*pb.Caller {
 	var res []*pb.Caller
 	for i := 0; i < CALLERCOUNT; i++ {
 		pc, filename, line, ok := runtime.Caller(l.skip + 3 + i)
@@ -163,7 +163,7 @@ func (l *CLg) caller() []*pb.Caller {
 	return res
 }
 
-func (l *CLg) send(level zerolog.Level, msg string, args ...any) {
+func (l *CtxLogger) send(level zerolog.Level, msg string, args ...any) {
 	log := &pb.Log{
 		Timestamp: &timestamp.Timestamp{
 			Seconds: time.Now().Unix(),
@@ -183,6 +183,6 @@ func (l *CLg) send(level zerolog.Level, msg string, args ...any) {
 	lg.mu.Unlock()
 }
 
-func (l *CLg) End() {
+func (l *CtxLogger) End() {
 	(*l.span).End()
 }

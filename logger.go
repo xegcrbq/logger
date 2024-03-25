@@ -60,7 +60,17 @@ func Connect(addr string) {
 	go sendLogs()
 }
 
-func Ctx(ctx context.Context) ICLg {
+func Ctx(ctx context.Context, opts ...string) ICLg {
+	if len(opts) == 2 {
+		ctx, span := otel.Tracer(opts[1]).Start(ctx, opts[0])
+		return &CtxLogger{
+			span:    &span,
+			traceID: span.SpanContext().TraceID().String(),
+			skip:    1,
+			Context: ctx,
+			extra:   make(map[string]string),
+		}
+	}
 	span := trace.SpanFromContext(ctx)
 	if !span.SpanContext().IsValid() {
 		ctx, span = otel.Tracer("logger").Start(ctx, "logger")
@@ -72,23 +82,4 @@ func Ctx(ctx context.Context) ICLg {
 		Context: ctx,
 		extra:   make(map[string]string),
 	}
-}
-
-func CtxWithSpan(ctx context.Context, opts CtxOptions) ICLg {
-	if opts.Tracer == nil {
-		opts.Tracer = otel.Tracer("logger")
-	}
-	span := trace.SpanFromContext(ctx)
-	if !span.SpanContext().IsValid() {
-		ctx, span = opts.Tracer.Start(ctx, "logger")
-	}
-	ctx, span = opts.Tracer.Start(ctx, opts.SpanName)
-	return &CtxLogger{
-		span:    &span,
-		traceID: span.SpanContext().TraceID().String(),
-		skip:    1,
-		Context: ctx,
-		extra:   make(map[string]string),
-	}
-
 }

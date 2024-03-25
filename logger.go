@@ -70,6 +70,7 @@ func Ctx(ctx context.Context) ICLg {
 		traceID: span.SpanContext().TraceID().String(),
 		skip:    1,
 		Context: ctx,
+		extra:   make(map[string]string),
 	}
 }
 
@@ -87,6 +88,7 @@ func CtxWithSpan(ctx context.Context, opts CtxOptions) ICLg {
 		traceID: span.SpanContext().TraceID().String(),
 		skip:    1,
 		Context: ctx,
+		extra:   make(map[string]string),
 	}
 
 }

@@ -21,6 +21,7 @@ type CtxLogger struct {
 	skip    int
 	traceID string
 	context.Context
+	extra map[string]string
 }
 
 func (l *CtxLogger) new(tag *string, fc *int) ICLg {
@@ -28,6 +29,7 @@ func (l *CtxLogger) new(tag *string, fc *int) ICLg {
 		span:    l.span,
 		traceID: l.traceID,
 		Context: l.Context,
+		extra:   l.extra,
 	}
 	if tag != nil {
 		ctxLogger.tag = *tag
@@ -48,6 +50,7 @@ func (l *CtxLogger) SpanStatus(code codes.Code, msg string, args ...any) {
 	(*l.span).SetStatus(code, fmt.Sprintf(msg, args...))
 }
 func (l *CtxLogger) SpanTag(key, value string) {
+	l.extra[key] = value
 	(*l.span).SetAttributes(attribute.String(key, value))
 }
 func (l *CtxLogger) SpanLog(msg string, args ...any) {
@@ -173,6 +176,7 @@ func (l *CtxLogger) send(level zerolog.Level, msg string, args ...any) {
 		Msg:     fmt.Sprintf(msg, args...),
 		Tag:     l.tag,
 		Level:   level.String(),
+		Extra:   l.extra,
 	}
 	if level >= zerolog.ErrorLevel {
 		l.SpanLog(msg, args...)

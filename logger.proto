@@ -17,6 +17,7 @@ message Log {
   string tag = 4;
   repeated Caller caller = 5;
   string level = 6;
+  map<string, string> extra = 7;
 }
 
 message LogBatch {

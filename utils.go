@@ -28,6 +28,8 @@ func sendLogs() {
 					continue
 				}
 				lg.logs = pb.LogBatch{}
+			} else if len(lg.logs.Logs) > 1000 {
+				lg.logs = pb.LogBatch{}
 			}
 		}
 	}

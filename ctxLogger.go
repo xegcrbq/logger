@@ -167,6 +167,9 @@ func (l *CtxLogger) caller() []*pb.Caller {
 }
 
 func (l *CtxLogger) send(level zerolog.Level, msg string, args ...any) {
+	if lg == nil {
+		return
+	}
 	log := &pb.Log{
 		Timestamp: &timestamp.Timestamp{
 			Seconds: time.Now().Unix(),

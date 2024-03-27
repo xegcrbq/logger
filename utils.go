@@ -3,6 +3,7 @@ package logger
 import (
 	"context"
 	pb "github.com/fle4a/logger/grpc"
+	"github.com/rs/zerolog"
 	"golang.org/x/mod/modfile"
 	"google.golang.org/grpc/metadata"
 	"os"
@@ -31,11 +32,41 @@ func sendLogs() {
 		}
 	}
 }
+
 func forwardSendLogs() {
+	if lg == nil {
+		return
+	}
 	md := metadata.Pairs("serviceName", lg.serviceName)
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	_, err := lg.client.SendLogs(ctx, &lg.logs)
 	if err != nil {
 		lg.lgCtx.Errorf("Error send logs: %v", err)
 	}
+}
+
+func getZeroLogger() zerolog.Logger {
+	moscowLocation, err := time.LoadLocation("Europe/Moscow")
+	if err != nil {
+		moscowLocation = time.UTC
+	}
+	var consoleWriterPtr *zerolog.ConsoleWriter
+	zerolog.TimeFieldFormat = time.StampMilli
+	zerolog.ErrorFieldName = zerolog.MessageFieldName
+	zerolog.TimestampFunc = func() time.Time {
+		return time.Now().In(moscowLocation)
+	}
+
+	consoleWriterPtr = &zerolog.ConsoleWriter{Out: os.Stderr,
+		TimeFormat:    time.TimeOnly,
+		FieldsExclude: []string{"stack"},
+		NoColor:       false,
+	}
+	zl = zerolog.New(consoleWriterPtr).
+		With().
+		Timestamp().
+		Caller().
+		Stack().
+		Logger()
+	return zl
 }

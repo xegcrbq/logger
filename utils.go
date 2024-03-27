@@ -19,7 +19,7 @@ func sendLogs() {
 	for {
 		select {
 		case <-time.After(time.Second * time.Duration(SENDPERIOD)):
-			if len(lg.logs.Logs) > 0 {
+			if len(lg.logs.Logs) > 0 && lg.client != nil {
 				md := metadata.Pairs("serviceName", getServiceName())
 				ctx := metadata.NewOutgoingContext(context.Background(), md)
 				_, err := lg.client.SendLogs(ctx, &lg.logs)
@@ -34,14 +34,13 @@ func sendLogs() {
 }
 
 func forwardSendLogs() {
-	if lg == nil {
-		return
-	}
-	md := metadata.Pairs("serviceName", lg.serviceName)
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
-	_, err := lg.client.SendLogs(ctx, &lg.logs)
-	if err != nil {
-		lg.lgCtx.Errorf("Error send logs: %v", err)
+	if len(lg.logs.Logs) > 0 && lg.client != nil {
+		md := metadata.Pairs("serviceName", lg.serviceName)
+		ctx := metadata.NewOutgoingContext(context.Background(), md)
+		_, err := lg.client.SendLogs(ctx, &lg.logs)
+		if err != nil {
+			lg.lgCtx.Errorf("Error send logs: %v", err)
+		}
 	}
 }
 

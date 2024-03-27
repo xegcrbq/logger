@@ -13,7 +13,7 @@ type logger struct {
 	client      pb.LogServiceClient
 	logs        pb.LogBatch
 	serviceName string
-	mu          sync.Mutex
+	mu          *sync.Mutex
 	lgCtx       ICLg
 }
 
@@ -25,20 +25,22 @@ type CtxOptions struct {
 var lg *logger
 var zl zerolog.Logger
 
-func Connect(addr string) {
+func init() {
+	zl = getZeroLogger()
+	go sendLogs()
 	lg = &logger{
-		client:      NewClient(addr),
 		logs:        pb.LogBatch{},
 		serviceName: getServiceName(),
+		mu:          &sync.Mutex{},
 		lgCtx:       Ctx(context.Background()),
 	}
-	go sendLogs()
+}
+
+func Connect(addr string) {
+	lg.client = NewClient(addr)
 }
 
 func Ctx(ctx context.Context, opts ...string) ICLg {
-	if zl.GetLevel() == zerolog.DebugLevel {
-		zl = getZeroLogger()
-	}
 	var span trace.Span
 	if len(opts) == 2 {
 		ctx, span = otel.Tracer(opts[1]).Start(ctx, opts[0])

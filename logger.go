@@ -2,8 +2,8 @@ package logger
 
 import (
 	"context"
-	pb "github.com/fle4a/logger/grpc"
 	"github.com/rs/zerolog"
+	pb "github.com/xegcrbq/logger/grpc"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 	"sync"

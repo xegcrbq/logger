@@ -1,7 +1,7 @@
 package logger
 
 import (
-	pb "github.com/fle4a/logger/grpc"
+	pb "github.com/xegcrbq/logger/grpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
